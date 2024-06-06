@@ -72,5 +72,6 @@ select = [
   'DTZ',  # flake8-datetimez
   'EM',   # flake8-errmsg
   'ISC',  # flake8-implicit-str-concat
+  'G',    # flake8-logging-format
 ]
 ignore = ['N818']
