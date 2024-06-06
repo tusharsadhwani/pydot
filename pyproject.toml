@@ -62,12 +62,14 @@ line-length = 79
 
 [tool.ruff.lint]
 select = [
-  'F', # pyflakes
-  'E', # pycodestyle errors
-  'W', # pycodestyle warnings
-  'I', # isort
-  'N', # pep8-naming
-  'UP', # pyupgrade
-  'C4', # flake8-comprehensions
+  'F',    # pyflakes
+  'E',    # pycodestyle errors
+  'W',    # pycodestyle warnings
+  'I',    # isort
+  'N',    # pep8-naming
+  'UP',   # pyupgrade
+  'C4',   # flake8-comprehensions
+  'DTZ',  # flake8-datetimez
+  'EM',   # flake8-errmsg
 ]
 ignore = ['N818']

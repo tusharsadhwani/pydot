@@ -114,7 +114,8 @@ def push_top_graph_stmt(s, loc, toks):
             add_elements(g, element)
 
         else:
-            raise ValueError(f"Unknown element statement: {element}")
+            msg = f"Unknown element statement: {element}"
+            raise ValueError(msg)
 
     for g in top_graphs:
         update_parent_graph_hierarchy(g)
@@ -216,15 +217,15 @@ def add_elements(
                 defaults_edge.update(element.attrs)
 
             else:
-                raise ValueError(
-                    f"Unknown DefaultStatement: {element.default_type}"
-                )
+                msg = f"Unknown DefaultStatement: {element.default_type}"
+                raise ValueError(msg)
 
         elif isinstance(element, AttrList):
             g.obj_dict["attributes"].update(element.attrs)
 
         else:
-            raise ValueError(f"Unknown element statement: {element}")
+            msg = f"Unknown element statement: {element}"
+            raise ValueError(msg)
 
 
 def push_graph_stmt(s, loc, toks):
@@ -263,7 +264,8 @@ def push_default_stmt(s, loc, toks):
     if default_type in ["graph", "node", "edge"]:
         return DefaultStatement(default_type, attrs)
     else:
-        raise ValueError(f"Unknown default statement: {toks}")
+        msg = f"Unknown default statement: {toks}"
+        raise ValueError(msg)
 
 
 def push_attr_list(s, loc, toks):
@@ -334,10 +336,11 @@ def push_edge_stmt(s, loc, toks):
 
             n_prev = n_next[0] + n_next_port
     else:
-        raise Exception(
+        msg = (
             f"Edge target {toks[2][0]} with type {type(toks[2][0])}"
             " unsupported."
         )
+        raise Exception(msg)
 
     return e
 

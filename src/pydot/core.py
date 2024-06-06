@@ -238,7 +238,8 @@ def call_graphviz(program, arguments, working_dir, **kwargs):
 #
 class FrozenDict(dict):
     def _blocked_attribute(obj):  # noqa: N805
-        raise AttributeError("A FrozenDict cannot be modified.")
+        msg = "A FrozenDict cannot be modified."
+        raise AttributeError(msg)
 
     _blocked_attribute = property(_blocked_attribute)
 
@@ -786,7 +787,8 @@ class Edge(Common):
         """
 
         if not isinstance(edge, Edge):
-            raise pydot.Error("Can not compare an edge to a non-edge object.")
+            msg = "Cannot compare an edge to a non-edge object."
+            raise pydot.Error(msg)
 
         if self.get_parent_graph().get_top_graph_type() == "graph":
             # If the graph is undirected, the edge has neither
@@ -943,10 +945,11 @@ class Graph(Common):
             self.obj_dict["attributes"] = dict(attrs)
 
             if graph_type not in ["graph", "digraph"]:
-                raise pydot.Error(
+                msg = (
                     f'Invalid type "{graph_type}". '
                     "Accepted graph types are: graph, digraph"
                 )
+                raise pydot.Error(msg)
 
             self.obj_dict["name"] = quote_if_necessary(graph_name)
             self.obj_dict["type"] = graph_type

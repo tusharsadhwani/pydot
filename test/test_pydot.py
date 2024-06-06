@@ -64,7 +64,8 @@ class Renderer:
     def pydot(cls, filename, encoding):
         c = pydot.graph_from_dot_file(filename, encoding=encoding)
         if not c:
-            raise RuntimeError("No data returned from pydot!")
+            msg = "No data returned from pydot!"
+            raise RuntimeError(msg)
         jpe_data = bytearray()
         for g in c:
             jpe_data.extend(
@@ -472,11 +473,12 @@ class TestShapeFiles(PydotTestCase):
         rendered = RenderResult(g.create(format="jpe"))
         graphviz = Renderer.graphviz(dot_file, encoding="ascii")
         if not _compare_images("from-past-to-future", rendered, graphviz):
-            raise AssertionError(
+            msg = (
                 "from-past-to-future.dot: "
                 f"{rendered.checksum} != {graphviz.checksum} "
                 "(found pydot vs graphviz difference)"
             )
+            raise AssertionError(msg)
 
 
 class RenderedTestCase(PydotTestCase):
@@ -497,10 +499,11 @@ class RenderedTestCase(PydotTestCase):
             encoding,
         )
         if not _compare_images(fname, rendered, graphviz):
-            raise AssertionError(
+            msg = (
                 f"{fname}: {rendered.checksum} != {graphviz.checksum} "
                 "(found pydot vs graphviz difference)"
             )
+            raise AssertionError(msg)
 
 
 class TestMyRegressions(RenderedTestCase):
