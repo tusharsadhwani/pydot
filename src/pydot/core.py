@@ -135,7 +135,7 @@ DEFAULT_PROGRAMS = {
 }
 
 
-def __generate_attribute_methods(Klass, attrs):
+def __generate_attribute_methods(klass, attrs):
     """Generate setter and getter methods for attributes."""
     for attr in attrs:
         # Generate all the Getter methods.
@@ -143,17 +143,17 @@ def __generate_attribute_methods(Klass, attrs):
         def __getter(self, _attr=attr):
             return self.get(_attr)
 
-        setattr(Klass, f"get_{attr}", __getter)
+        setattr(klass, f"get_{attr}", __getter)
 
         # Generate all the Setter methods.
         #
         def __setter(self, *args, _attr=attr):
             return self.set(_attr, *args)
 
-        setattr(Klass, f"set_{attr}", __setter)
+        setattr(klass, f"set_{attr}", __setter)
 
 
-def __generate_format_methods(Klass):
+def __generate_format_methods(klass):
     """Generate create_ and write_ methods for formats."""
     # Automatically creates all
     # the methods enabling the creation
@@ -164,7 +164,7 @@ def __generate_format_methods(Klass):
             """Refer to docstring of method `create`."""
             return self.create(format=f, prog=prog, encoding=encoding)
 
-        setattr(Klass, f"create_{frmt}", __create_method)
+        setattr(klass, f"create_{frmt}", __create_method)
 
     for frmt in OUTPUT_FORMATS ^ {"raw"}:
 
@@ -172,7 +172,7 @@ def __generate_format_methods(Klass):
             """Refer to docstring of method `write`."""
             self.write(path, format=f, prog=prog, encoding=encoding)
 
-        setattr(Klass, f"write_{frmt}", __write_method)
+        setattr(klass, f"write_{frmt}", __write_method)
 
 
 def is_windows():
@@ -236,9 +236,9 @@ def call_graphviz(program, arguments, working_dir, **kwargs):
 #
 # This version freezes dictionaries used as values within dictionaries.
 #
-class frozendict(dict):
-    def _blocked_attribute(obj):
-        raise AttributeError("A frozendict cannot be modified.")
+class FrozenDict(dict):
+    def _blocked_attribute(obj):  # noqa: N805
+        raise AttributeError("A FrozenDict cannot be modified.")
 
     _blocked_attribute = property(_blocked_attribute)
 
@@ -254,15 +254,15 @@ class frozendict(dict):
                 arg = copy.copy(arg)
                 for k in arg:
                     v = arg[k]
-                    if isinstance(v, frozendict):
+                    if isinstance(v, FrozenDict):
                         arg[k] = v
                     elif isinstance(v, dict):
-                        arg[k] = frozendict(v)
+                        arg[k] = FrozenDict(v)
                     elif isinstance(v, list):
                         v_ = []
                         for elm in v:
                             if isinstance(elm, dict):
-                                v_.append(frozendict(elm))
+                                v_.append(FrozenDict(elm))
                             else:
                                 v_.append(elm)
                         arg[k] = tuple(v_)
@@ -285,7 +285,7 @@ class frozendict(dict):
 
     def __repr__(self):
         dict_repr = dict.__repr__(self)
-        return f"frozendict({dict_repr})"
+        return f"FrozenDict({dict_repr})"
 
 
 dot_keywords = ["graph", "subgraph", "digraph", "node", "edge", "strict"]
@@ -842,7 +842,7 @@ class Edge(Common):
         src = self.parse_node_ref(self.get_source())
         dst = self.parse_node_ref(self.get_destination())
 
-        if isinstance(src, frozendict):
+        if isinstance(src, FrozenDict):
             edge = [Subgraph(obj_dict=src).to_string()]
         elif isinstance(src, int):
             edge = [str(src)]
@@ -859,7 +859,7 @@ class Edge(Common):
         else:
             edge.append("--")
 
-        if isinstance(dst, frozendict):
+        if isinstance(dst, FrozenDict):
             edge.append(Subgraph(obj_dict=dst).to_string())
         elif isinstance(dst, int):
             edge.append(str(dst))

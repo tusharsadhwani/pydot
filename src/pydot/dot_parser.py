@@ -23,10 +23,10 @@ from pyparsing import (
     ParseResults,
     QuotedString,
     Word,
-    cStyleComment,
+    c_style_comment,
     nums,
     pyparsing_unicode,
-    restOfLine,
+    rest_of_line,
 )
 
 import pydot
@@ -39,7 +39,7 @@ _logger = logging.getLogger(__name__)
 _logger.debug("pydot dot_parser module initializing")
 
 
-class P_AttrList:
+class AttrList:
     def __init__(self, toks):
         self.attrs = {}
         i = 0
@@ -60,7 +60,7 @@ class P_AttrList:
         return f"{name}({self.attrs!r})"
 
 
-class DefaultStatement(P_AttrList):
+class DefaultStatement(AttrList):
     def __init__(self, default_type, attrs):
         self.default_type = default_type
         self.attrs = attrs
@@ -107,7 +107,7 @@ def push_top_graph_stmt(s, loc, toks):
 
             g.set_parent_graph(g)
 
-        elif isinstance(element, P_AttrList):
+        elif isinstance(element, AttrList):
             attrs.update(element.attrs)
 
         elif isinstance(element, (ParseResults, list)):
@@ -130,7 +130,7 @@ def update_parent_graph_hierarchy(g, parent_graph=None, level=0):
         parent_graph = g
 
     for key_name in ("edges",):
-        if isinstance(g, pydot.frozendict):
+        if isinstance(g, pydot.FrozenDict):
             item_dict = g
         else:
             item_dict = g.obj_dict
@@ -156,7 +156,7 @@ def update_parent_graph_hierarchy(g, parent_graph=None, level=0):
                             (pydot.Graph, pydot.Subgraph, pydot.Cluster),
                         ):
                             vertex.set_parent_graph(parent_graph)
-                        if isinstance(vertex, pydot.frozendict):
+                        if isinstance(vertex, pydot.FrozenDict):
                             if vertex["parent_graph"] is g:
                                 pass
                             else:
@@ -220,7 +220,7 @@ def add_elements(
                     f"Unknown DefaultStatement: {element.default_type}"
                 )
 
-        elif isinstance(element, P_AttrList):
+        elif isinstance(element, AttrList):
             g.obj_dict["attributes"].update(element.attrs)
 
         else:
@@ -267,7 +267,7 @@ def push_default_stmt(s, loc, toks):
 
 
 def push_attr_list(s, loc, toks):
-    p = P_AttrList(toks)
+    p = AttrList(toks)
     return p
 
 
@@ -290,7 +290,7 @@ def do_node_ports(node):
 
 
 def push_edge_stmt(s, loc, toks):
-    tok_attrs = [a for a in toks if isinstance(a, P_AttrList)]
+    tok_attrs = [a for a in toks if isinstance(a, AttrList)]
     attrs = {}
     for a in tok_attrs:
         attrs.update(a.attrs)
@@ -298,7 +298,7 @@ def push_edge_stmt(s, loc, toks):
     e = []
 
     if isinstance(toks[0][0], pydot.Graph):
-        n_prev = pydot.frozendict(toks[0][0].obj_dict)
+        n_prev = pydot.FrozenDict(toks[0][0].obj_dict)
     else:
         n_prev = toks[0][0] + do_node_ports(toks[0])
 
@@ -310,7 +310,7 @@ def push_edge_stmt(s, loc, toks):
 
     elif isinstance(toks[2][0], pydot.Graph):
         e.append(
-            pydot.Edge(n_prev, pydot.frozendict(toks[2][0].obj_dict), **attrs)
+            pydot.Edge(n_prev, pydot.FrozenDict(toks[2][0].obj_dict), **attrs)
         )
 
     elif isinstance(toks[2][0], pydot.Node):
@@ -326,9 +326,7 @@ def push_edge_stmt(s, loc, toks):
     # if the target of this edge is the name of a node
     elif isinstance(toks[2][0], str):
         for n_next in list(tuple(toks)[2::2]):
-            if isinstance(n_next, P_AttrList) or not isinstance(
-                n_next[0], str
-            ):
+            if isinstance(n_next, AttrList) or not isinstance(n_next[0], str):
                 continue
 
             n_next_port = do_node_ports(n_next)
@@ -402,19 +400,19 @@ def graph_definition():
         html_text << "<" + inner_html + ">"
         html_text.setParseAction(lambda arr: "".join(arr))
 
-        ID = (identifier | html_text | double_quoted_string).setName("ID")
+        _id = (identifier | html_text | double_quoted_string).setName("ID")
 
         float_number = Combine(
             Optional(minus) + OneOrMore(Word(nums + "."))
         ).setName("float_number")
 
-        righthand_id = (float_number | ID).setName("righthand_id")
+        righthand_id = (float_number | _id).setName("righthand_id")
 
-        port_angle = (at + ID).setName("port_angle")
+        port_angle = (at + _id).setName("port_angle")
 
         port_location = (
-            OneOrMore(Group(colon + ID))
-            | Group(colon + lparen + ID + comma + ID + rparen)
+            OneOrMore(Group(colon + _id))
+            | Group(colon + lparen + _id + comma + _id + rparen)
         ).setName("port_location")
 
         port = (
@@ -422,9 +420,9 @@ def graph_definition():
             | Group(port_angle + Optional(port_location))
         ).setName("port")
 
-        node_id = ID + Optional(port)
+        node_id = _id + Optional(port)
         a_list = OneOrMore(
-            ID + Optional(equals + righthand_id) + Optional(comma.suppress())
+            _id + Optional(equals + righthand_id) + Optional(comma.suppress())
         ).setName("a_list")
 
         attr_list = OneOrMore(
@@ -447,10 +445,10 @@ def graph_definition():
 
         edge_point = Forward()
 
-        edgeRHS = OneOrMore(edgeop + edge_point)
-        edge_stmt = edge_point + edgeRHS + Optional(attr_list)
+        edge_rhs = OneOrMore(edgeop + edge_point)
+        edge_stmt = edge_point + edge_rhs + Optional(attr_list)
 
-        subgraph = Group(subgraph_ + Optional(ID) + graph_stmt).setName(
+        subgraph = Group(subgraph_ + Optional(_id) + graph_stmt).setName(
             "subgraph"
         )
 
@@ -462,7 +460,7 @@ def graph_definition():
             node_id + Optional(attr_list) + Optional(semi.suppress())
         ).setName("node_stmt")
 
-        assignment = (ID + equals + righthand_id).setName("assignment")
+        assignment = (_id + equals + righthand_id).setName("assignment")
         stmt = (
             assignment
             | edge_stmt
@@ -477,17 +475,19 @@ def graph_definition():
             (
                 Optional(strict_)
                 + Group(graph_ | digraph_)
-                + Optional(ID)
+                + Optional(_id)
                 + graph_stmt
             ).setResultsName("graph")
         )
 
-        singleLineComment = Group("//" + restOfLine) | Group("#" + restOfLine)
+        single_line_comment = Group("//" + rest_of_line) | Group(
+            "#" + rest_of_line
+        )
 
         # actions
 
-        graphparser.ignore(singleLineComment)
-        graphparser.ignore(cStyleComment)
+        graphparser.ignore(single_line_comment)
+        graphparser.ignore(c_style_comment)
 
         assignment.setParseAction(push_attr_list)
         a_list.setParseAction(push_attr_list)
