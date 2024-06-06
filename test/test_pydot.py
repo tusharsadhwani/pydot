@@ -448,7 +448,7 @@ class TestShapeFiles(PydotTestCase):
     @unittest.skipUnless(
         os.path.isdir(shapefile_dir),
         "Skipping tests that involve images,"
-        + " they can be found in the git repository",
+        " they can be found in the git repository",
     )
     def test_graph_with_shapefiles(self):
         dot_file = os.path.join(self.shapefile_dir, "from-past-to-future.dot")

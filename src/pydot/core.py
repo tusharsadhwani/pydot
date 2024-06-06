@@ -1097,8 +1097,7 @@ class Graph(Common):
         if not isinstance(graph_node, Node):
             raise TypeError(
                 "add_node() received "
-                + "a non node class object: "
-                + str(graph_node)
+                "a non node class object: " + str(graph_node)
             )
 
         node = self.get_node(graph_node.get_name())

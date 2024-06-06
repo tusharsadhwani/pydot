@@ -71,5 +71,6 @@ select = [
   'C4',   # flake8-comprehensions
   'DTZ',  # flake8-datetimez
   'EM',   # flake8-errmsg
+  'ISC',  # flake8-implicit-str-concat
 ]
 ignore = ['N818']
